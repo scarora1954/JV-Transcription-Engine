@@ -1,0 +1,4 @@
+google-genai
+pydub
+python-dotenv
+audioop-lts
