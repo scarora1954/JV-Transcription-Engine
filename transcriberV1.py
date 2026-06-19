@@ -161,7 +161,7 @@ with st.sidebar:
         min_value=1,
         max_value=10,
         value=10,
-        step=0.5,
+        step=1,
         help="Slices large input media automatically into these lengths before sending inline bytes to the API."
     )
     
