@@ -143,7 +143,16 @@ with st.sidebar:
         help="Select the specific Gemini model engine version for the pipeline."
     )
     selected_model_id = model_options[selected_model_display]
-    
+
+    # तापमान (Temperature) नियन्त्रण के लिए स्लाइडर विजेट का संरेखण
+    selected_temp = st.slider(
+        label="मॉडल तापमान (Temperature) चुनें",
+        min_value=0.0,
+        max_value=1.0,
+        value=0.0,      # डिफ़ॉल्ट मान 0.0 रहेगा (रॉ ट्रांसक्रिप्शन के लिए)
+        step=0.1,
+        help="0.0 = पूर्णतः अक्षरशः (Verbatim) और सटीक। 1.0 = अधिक रचनात्मक और भाषाई विविधता।"
+    )
     st.write("---")
     st.subheader("🎛️ Dynamic Boundaries")
     
@@ -229,7 +238,11 @@ with tab1:
                         
                         response = client.models.generate_content(
                             model=selected_model_id,
-                            contents=[inline_audio_part, configured_prompt]
+                            contents=[inline_audio_part, configured_prompt],
+                            config=types.GenerateContentConfig(
+                                temperature=selected_temp,  # स्लाइडर से प्राप्त डायनेमिक मान
+                                top_p=0.1
+                            )
                         )
                         compiled_transcripts.append(response.text)
                     
