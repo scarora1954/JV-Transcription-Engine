@@ -250,7 +250,12 @@ with tab1:
                     
                 st.session_state.formatted_output = "\n\n".join(compiled_transcripts)
                 st.session_state.elapsed_time = time.time() - start_time
-                
+                # --- यहाँ से कॉपी और प्रदर्शन का नया कोड जोड़ें ---
+                if st.session_state.formatted_output:
+                    st.subheader("संशोधित पाठ (Final Transcript):")
+    
+    # यह विजेट बिना किसी अतिरिक्त कोडिंग के एक सुन्दर 'Copy' बटन प्रदान करेगा
+                    st.code(st.session_state.formatted_output, language="text")
                 # स्वचालित बैकअप फंक्शन को यहाँ कॉल किया गया है
                 save_local_backup(st.session_state.download_filename, st.session_state.formatted_output)
                 
