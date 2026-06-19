@@ -9,6 +9,7 @@ import streamlit as st
 import google.genai as genai
 from google.genai import types
 from pydub import AudioSegment
+from datetime import datetime  
 
 # ==========================================
 # 1. CONFIGURATION & STATE INITIALIZATION
@@ -144,12 +145,11 @@ with st.sidebar:
     )
     selected_model_id = model_options[selected_model_display]
 
-    # तापमान (Temperature) नियन्त्रण के लिए स्लाइडर विजेट का संरेखण
     selected_temp = st.slider(
-        label="मॉडल तापमान (Temperature) चुनें",
+        label="모델 तापमान (Temperature) चुनें",
         min_value=0.0,
         max_value=1.0,
-        value=0.0,      # डिफ़ॉल्ट मान 0.0 रहेगा (रॉ ट्रांसक्रिप्शन के लिए)
+        value=0.0,      
         step=0.1,
         help="0.0 = पूर्णतः अक्षरशः (Verbatim) और सटीक। 1.0 = अधिक रचनात्मक और भाषाई विविधता।"
     )
@@ -205,11 +205,15 @@ with tab1:
     
     if audio_file and st.button("Process Audio Pipeline"):
         client = get_gemini_client()
+        
         if client:
             start_time = time.time()
             try:
                 base_name, _ = os.path.splitext(audio_file.name)
-                st.session_state.download_filename = f"{base_name}_transcript.md"
+                current_time = datetime.now().strftime("%Y%m%d_%H%M")
+                
+                # सुव्यवस्थित फ़ाइल नाम प्रबन्धन (.md एक्सटेंशन के साथ)
+                st.session_state.download_filename = f"{base_name}_{current_time}.md"
                 
                 with st.spinner(f"FFmpeg partitioning audio into {audio_chunk_limit}-minute memory chunks..."):
                     audio_chunks, raw_extension = slice_audio_to_bytes(audio_file, audio_chunk_limit)
@@ -240,7 +244,7 @@ with tab1:
                             model=selected_model_id,
                             contents=[inline_audio_part, configured_prompt],
                             config=types.GenerateContentConfig(
-                                temperature=selected_temp,  # स्लाइडर से प्राप्त डायनेमिक मान
+                                temperature=selected_temp,
                                 top_p=0.1
                             )
                         )
@@ -250,13 +254,9 @@ with tab1:
                     
                 st.session_state.formatted_output = "\n\n".join(compiled_transcripts)
                 st.session_state.elapsed_time = time.time() - start_time
-                # --- यहाँ से कॉपी और प्रदर्शन का नया कोड जोड़ें ---
-                if st.session_state.formatted_output:
-                    st.subheader("संशोधित पाठ (Final Transcript):")
-    
-    # यह विजेट बिना किसी अतिरिक्त कोडिंग के एक सुन्दर 'Copy' बटन प्रदान करेगा
-                    st.code(st.session_state.formatted_output, language="text")
-                # स्वचालित बैकअप फंक्शन को यहाँ कॉल किया गया है
+                
+                # यहाँ से पुरानी भ्रम पैदा करने वाली st.code लाइनों को हटा दिया गया है
+                
                 save_local_backup(st.session_state.download_filename, st.session_state.formatted_output)
                 
             except Exception as e:
@@ -276,7 +276,10 @@ with tab2:
             with st.spinner(f"Processing sentence boundary chunks (Limit: {sentence_limit})..."):
                 start_time = time.time()
                 try:
-                    st.session_state.download_filename = f"formatted_text_{input_lang_text.lower()}.md"
+                    current_time = datetime.now().strftime("%Y%m%d_%H%M")
+                    
+                    # टाइमस्टैम्प आधारित सुसंगत फ़ाइल नामकरण प्रणाली (.md प्रारूप में)
+                    st.session_state.download_filename = f"formatted_text_{input_lang_text.lower()}_{current_time}.md"
                     
                     chunks = chunk_by_sentences(raw_text, sentence_limit)
                     compiled_results = []
@@ -298,7 +301,6 @@ with tab2:
                     st.session_state.formatted_output = "\n\n".join(compiled_results)
                     st.session_state.elapsed_time = time.time() - start_time
                     
-                    # स्वचालित बैकअप फंक्शन को यहाँ कॉल किया गया है
                     save_local_backup(st.session_state.download_filename, st.session_state.formatted_output)
                     
                 except Exception as e:
@@ -321,25 +323,12 @@ if st.session_state.formatted_output:
     st.markdown(st.session_state.formatted_output, unsafe_allow_html=True)
     
     st.write("")
-    # st.download_button(
-    #     label=f"📥 Download Markdown File ({st.session_state.download_filename})",
-    #     data=st.session_state.formatted_output,
-    #     file_name=st.session_state.download_filename,
-    #     mime="text/markdown",
-    #     use_container_width=True
-    # )
-    from datetime import datetime
-
-    # 1. वर्तमान दिनांक और समय का शुद्ध टाइमस्टैम्प तैयार करें (Format: YYYYMMDD_HHMMSS)
-    current_time = datetime.now().strftime("%Y%m%d_%H%m%s")
     
-    # 2. टाइमस्टैम्प युक्त फ़ाइल का नाम सेट करें
-    download_filename = f"transcript_{current_time}.txt"
-    
-    # 3. परिपरिष्कृत डाउनलोड बटन
+    # दोनों टैब्स के लिए पूरी तरह एकीकृत, स्वच्छ डाउनलोड बटन प्रबन्धन
     st.download_button(
-        label="📥 संशोधित पाठ डाउनलोड करें (Download)",
+        label=f"📥 संशोधित पाठ डाउनलोड करें ({st.session_state.download_filename})",
         data=st.session_state.formatted_output,
-        file_name=download_filename,
-        mime="text/plain"
+        file_name=st.session_state.download_filename,
+        mime="text/plain",
+        use_container_width=True
     )
