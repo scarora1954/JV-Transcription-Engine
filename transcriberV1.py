@@ -321,10 +321,25 @@ if st.session_state.formatted_output:
     st.markdown(st.session_state.formatted_output, unsafe_allow_html=True)
     
     st.write("")
+    # st.download_button(
+    #     label=f"📥 Download Markdown File ({st.session_state.download_filename})",
+    #     data=st.session_state.formatted_output,
+    #     file_name=st.session_state.download_filename,
+    #     mime="text/markdown",
+    #     use_container_width=True
+    # )
+    from datetime import datetime
+
+    # 1. वर्तमान दिनांक और समय का शुद्ध टाइमस्टैम्प तैयार करें (Format: YYYYMMDD_HHMMSS)
+    current_time = datetime.now().strftime("%Y%m%d_%H%m%s")
+    
+    # 2. टाइमस्टैम्प युक्त फ़ाइल का नाम सेट करें
+    download_filename = f"transcript_{current_time}.txt"
+    
+    # 3. परिपरिष्कृत डाउनलोड बटन
     st.download_button(
-        label=f"📥 Download Markdown File ({st.session_state.download_filename})",
+        label="📥 संशोधित पाठ डाउनलोड करें (Download)",
         data=st.session_state.formatted_output,
-        file_name=st.session_state.download_filename,
-        mime="text/markdown",
-        use_container_width=True
+        file_name=download_filename,
+        mime="text/plain"
     )
