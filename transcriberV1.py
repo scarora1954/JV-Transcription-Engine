@@ -133,7 +133,7 @@ with st.sidebar:
     st.subheader("🤖 Model Selection")
     
     model_options = {
-        "Gemini Flash-Lite Latest Default":"gemini-flash-lite-latest"
+        "Gemini Flash-Lite Latest Default":"gemini-flash-lite-latest",
         "Gemini 2.5 Flash": "gemini-2.5-flash",
         "Gemini 3.0 Flash": "gemini-3.0-flash",
         "Gemini 3.5 Flash ": "gemini-3.5-flash",
