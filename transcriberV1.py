@@ -9,7 +9,9 @@ import streamlit as st
 import google.genai as genai
 from google.genai import types
 from pydub import AudioSegment
-from datetime import datetime  
+from datetime import datetime 
+# transcriberV1.py में सबसे ऊपर (Imports के साथ) जोड़ें:
+from audio_utils import slice_audio_to_bytes
 
 # ==========================================
 # 1. CONFIGURATION & STATE INITIALIZATION
@@ -78,25 +80,25 @@ def chunk_by_sentences(text, sentence_limit):
         chunks.append(" ".join(current_chunk))
     return chunks
 
-def slice_audio_to_bytes(uploaded_file, chunk_minutes):
-    """Slices a large audio file completely in-memory into raw byte-segment blocks."""
-    audio = AudioSegment.from_file(io.BytesIO(uploaded_file.read()))
-    chunk_length_ms = chunk_minutes * 60 * 1000 
+# def slice_audio_to_bytes(uploaded_file, chunk_minutes):
+#     """Slices a large audio file completely in-memory into raw byte-segment blocks."""
+#     audio = AudioSegment.from_file(io.BytesIO(uploaded_file.read()))
+#     chunk_length_ms = chunk_minutes * 60 * 1000 
     
-    byte_chunks = []
-    _, ext = os.path.splitext(uploaded_file.name)
-    format_str = ext.replace(".", "").lower()
+#     byte_chunks = []
+#     _, ext = os.path.splitext(uploaded_file.name)
+#     format_str = ext.replace(".", "").lower()
     
-    if format_str == "m4a":
-        format_str = "ipod"
+#     if format_str == "m4a":
+#         format_str = "ipod"
         
-    for i in range(0, len(audio), chunk_length_ms):
-        chunk = audio[i:i + chunk_length_ms]
-        chunk_buffer = io.BytesIO()
-        chunk.export(chunk_buffer, format=format_str)
-        byte_chunks.append(chunk_buffer.getvalue())
+#     for i in range(0, len(audio), chunk_length_ms):
+#         chunk = audio[i:i + chunk_length_ms]
+#         chunk_buffer = io.BytesIO()
+#         chunk.export(chunk_buffer, format=format_str)
+#         byte_chunks.append(chunk_buffer.getvalue())
         
-    return byte_chunks, ext.lower()
+#     return byte_chunks, ext.lower()
 
 def save_local_backup(filename, content):
     """Saves a local backup of the processed transcript immediately to prevent data loss."""
